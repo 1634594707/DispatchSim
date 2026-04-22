@@ -25,6 +25,15 @@ frontend/.vite/
 # Backend
 dispatch-sim-backend/target/
 dispatch-sim-backend/.m2/
+dispatch-sim-backend/src/test/
+
+# Test files
+**/__tests__/
+**/tests/
+**/*.test.*
+**/*.spec.*
+**/*Test.java
+**/*Tests.java
 
 # Logs
 *.log
