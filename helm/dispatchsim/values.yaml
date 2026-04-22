@@ -1,0 +1,65 @@
+namespaceOverride: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: your-registry/dispatchsim-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+backend:
+  replicaCount: 1
+  image:
+    repository: your-registry/dispatchsim-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  config:
+    SPRING_PROFILES_ACTIVE: dev
+    SERVER_PORT: "8080"
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql.dispatchsim.svc.cluster.local:3306/dispatch_sim?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    SPRING_DATASOURCE_USERNAME: dispatchsim
+    SPRING_DATA_REDIS_HOST: redis.dispatchsim.svc.cluster.local
+    SPRING_DATA_REDIS_PORT: "6379"
+    SPRING_RABBITMQ_HOST: rabbitmq.dispatchsim.svc.cluster.local
+    SPRING_RABBITMQ_PORT: "5672"
+    SPRING_RABBITMQ_USERNAME: guest
+  secret:
+    SPRING_DATASOURCE_PASSWORD: replace-me
+    SPRING_RABBITMQ_PASSWORD: replace-me
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  host: dispatchsim.example.com
+  tls:
+    enabled: false
+    secretName: dispatchsim-tls

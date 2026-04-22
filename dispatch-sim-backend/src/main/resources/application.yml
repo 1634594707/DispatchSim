@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: dispatch-sim-backend
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/dispatch_sim?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 1209
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 5s
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.dispatchsim: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+
+dispatch-sim:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+  statistics:
+    cache-enabled: true
+    local-cache-enabled: true
+    cache-ttl-seconds: 15
+  websocket:
+    endpoint: /ws/simulation
+    app-destination-prefix: /app
+    topic-prefix: /topic
+  rabbit:
+    event-exchange: dispatchsim.events
+    dead-letter-exchange: dispatchsim.events.dlx
+    order-queue: dispatchsim.order.events
+    vehicle-queue: dispatchsim.vehicle.events
+    dead-letter-queue: dispatchsim.dead-letter

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dispatchsim-frontend
+  namespace: dispatchsim
+spec:
+  selector:
+    app: dispatchsim-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

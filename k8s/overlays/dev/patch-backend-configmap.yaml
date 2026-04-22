@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatchsim-backend-config
+  namespace: dispatchsim
+data:
+  SPRING_PROFILES_ACTIVE: "dev"
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-dev.database.svc.cluster.local:3306/dispatch_sim?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+  SPRING_DATASOURCE_USERNAME: "dispatchsim_dev"
+  SPRING_DATA_REDIS_HOST: "redis-dev.cache.svc.cluster.local"
+  SPRING_RABBITMQ_HOST: "rabbitmq-dev.mq.svc.cluster.local"
+  SPRING_RABBITMQ_USERNAME: "guest"

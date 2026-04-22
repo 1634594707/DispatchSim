@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MAVEN_REPO="$SCRIPT_DIR/.m2/repository"
+BUNDLED_MAVEN="$SCRIPT_DIR/../.tools/apache-maven-3.9.11/bin/mvn"
+
+if [ -x "$BUNDLED_MAVEN" ]; then
+  exec "$BUNDLED_MAVEN" -Dmaven.repo.local="$MAVEN_REPO" "$@"
+fi
+
+if command -v mvn >/dev/null 2>&1; then
+  exec mvn -Dmaven.repo.local="$MAVEN_REPO" "$@"
+fi
+
+echo "Maven was not found. Install Maven or restore .tools/apache-maven-3.9.11." >&2
+exit 1

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatchsim-backend
+  namespace: dispatchsim
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatchsim-backend
+  template:
+    metadata:
+      labels:
+        app: dispatchsim-backend
+    spec:
+      containers:
+        - name: backend
+          image: your-registry/dispatchsim-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: dispatchsim-backend-config
+            - secretRef:
+                name: dispatchsim-backend-secret
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"

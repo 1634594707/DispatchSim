@@ -1,0 +1,8 @@
+1. Get the application URL by running these commands:
+  kubectl get ingress -n {{ include "dispatchsim.namespace" . }}
+
+2. Confirm backend pod status:
+  kubectl get pods -n {{ include "dispatchsim.namespace" . }} -l app={{ include "dispatchsim.fullname" . }}-backend
+
+3. Confirm frontend pod status:
+  kubectl get pods -n {{ include "dispatchsim.namespace" . }} -l app={{ include "dispatchsim.fullname" . }}-frontend

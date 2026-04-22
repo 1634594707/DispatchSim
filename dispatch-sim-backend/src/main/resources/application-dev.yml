@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    show-sql: false
+  docker:
+    compose:
+      enabled: false
+
+logging:
+  level:
+    com.dispatchsim: DEBUG

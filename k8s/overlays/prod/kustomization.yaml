@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dispatchsim-prod
+resources:
+  - ../../base
+patches:
+  - path: patch-backend-configmap.yaml
+  - path: patch-backend-secret.yaml
+  - path: patch-backend-deployment.yaml
+  - path: patch-frontend-deployment.yaml
+  - path: patch-ingress.yaml
+images:
+  - name: your-registry/dispatchsim-backend:latest
+    newName: your-registry/dispatchsim-backend
+    newTag: "1.0.0"
+  - name: your-registry/dispatchsim-frontend:latest
+    newName: your-registry/dispatchsim-frontend
+    newTag: "1.0.0"

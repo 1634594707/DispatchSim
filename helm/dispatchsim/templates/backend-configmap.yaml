@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dispatchsim.fullname" . }}-backend-config
+  namespace: {{ include "dispatchsim.namespace" . }}
+data:
+{{- range $key, $value := .Values.backend.config }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}

@@ -1,0 +1,94 @@
+{
+  "obstacles": [
+    {
+      "id": "building-1",
+      "type": "BUILDING",
+      "x": 20,
+      "y": 60,
+      "width": 30,
+      "height": 25,
+      "label": "仓库A"
+    },
+    {
+      "id": "building-2",
+      "type": "BUILDING",
+      "x": 90,
+      "y": 65,
+      "width": 35,
+      "height": 30,
+      "label": "配送中心"
+    },
+    {
+      "id": "building-3",
+      "type": "BUILDING",
+      "x": 55,
+      "y": 75,
+      "width": 25,
+      "height": 20,
+      "label": "办公楼"
+    },
+    {
+      "id": "parking-1",
+      "type": "PARKING",
+      "x": 10,
+      "y": 10,
+      "width": 25,
+      "height": 20,
+      "label": "停车场A"
+    },
+    {
+      "id": "parking-2",
+      "type": "PARKING",
+      "x": 110,
+      "y": 15,
+      "width": 20,
+      "height": 25,
+      "label": "停车场B"
+    },
+    {
+      "id": "road-1",
+      "type": "ROAD",
+      "x": 0,
+      "y": 45,
+      "width": 140,
+      "height": 8,
+      "label": "主干道"
+    },
+    {
+      "id": "road-2",
+      "type": "ROAD",
+      "x": 65,
+      "y": 0,
+      "width": 8,
+      "height": 100,
+      "label": "次干道"
+    },
+    {
+      "id": "road-3",
+      "type": "ROAD",
+      "x": 0,
+      "y": 30,
+      "width": 50,
+      "height": 6,
+      "label": "支路1"
+    },
+    {
+      "id": "green-1",
+      "type": "GREEN_SPACE",
+      "x": 100,
+      "y": 15,
+      "width": 20,
+      "height": 20,
+      "label": "公园"
+    },
+    {
+      "id": "green-2",
+      "type": "GREEN_SPACE",
+      "x": 40,
+      "y": 10,
+      "width": 15,
+      "height": 15,
+      "label": "绿地"
+    }
+  ]
+}
