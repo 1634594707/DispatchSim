@@ -21,7 +21,11 @@ public class DomainDtoMapper {
                 order.getAssignedVehicleId(),
                 order.getCreatedAt(),
                 order.getCompletedAt(),
-                order.getCancellationReason()
+                order.getCancellationReason(),
+                order.getArchived(),
+                order.getArchivedAt(),
+                order.getArchivalReason(),
+                order.getDepotId()
         );
     }
 
@@ -38,7 +42,9 @@ public class DomainDtoMapper {
                 vehicle.getHeading(),
                 vehicle.getTotalTasks(),
                 vehicle.getTotalDistance(),
-                vehicle.getCurrentOrderId()
+                vehicle.getCurrentOrderId(),
+                vehicle.getOrderQueue(),
+                vehicle.getLoadingTimeRemaining()
         );
     }
 

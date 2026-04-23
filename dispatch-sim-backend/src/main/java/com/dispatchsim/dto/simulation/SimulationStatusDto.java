@@ -13,6 +13,12 @@ public record SimulationStatusDto(
         @Schema(description = "当前回放会话 ID")
         String sessionId,
         @Schema(description = "已运行时长，单位秒", example = "120")
-        long elapsedTime
+        long elapsedTime,
+        @Schema(description = "仿真速度倍率", example = "1.0")
+        double speed,
+        @Schema(description = "是否为单步模式")
+        boolean stepMode,
+        @Schema(description = "暂停时是否允许编辑")
+        boolean pauseEditingEnabled
 ) {
 }

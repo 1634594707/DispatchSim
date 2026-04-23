@@ -1,8 +1,10 @@
 package com.dispatchsim.common.exception;
 
-public class BusinessException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class BusinessException extends DispatchSimException {
 
     public BusinessException(String message) {
-        super(message);
+        super(HttpStatus.BAD_REQUEST, message);
     }
 }

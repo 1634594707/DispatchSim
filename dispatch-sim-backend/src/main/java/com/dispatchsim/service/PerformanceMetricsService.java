@@ -11,4 +11,6 @@ public interface PerformanceMetricsService {
     void recordSlowQuery(String operation, long elapsedMs);
 
     PerformanceMetricsDto snapshot();
+
+    void reset();
 }

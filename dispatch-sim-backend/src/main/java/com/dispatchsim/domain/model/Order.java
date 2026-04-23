@@ -71,6 +71,11 @@ public class Order {
 
     private String cancellationReason;
     @Column(nullable = false)
+    private Boolean archived;
+    private Instant archivedAt;
+    private String archivalReason;
+    private Long depotId;
+    @Column(nullable = false)
     private Integer dispatchAttempts;
 
     public void markPending() {
@@ -80,6 +85,9 @@ public class Order {
         }
         if (this.dispatchAttempts == null) {
             this.dispatchAttempts = 0;
+        }
+        if (this.archived == null) {
+            this.archived = false;
         }
     }
 
@@ -104,6 +112,27 @@ public class Order {
         }
         this.status = OrderStatus.COMPLETED;
         this.completedAt = Instant.now();
+    }
+
+    public void archive(String reason) {
+        if (this.status != OrderStatus.COMPLETED && this.status != OrderStatus.CANCELLED) {
+            throw new IllegalStateException("Only completed or cancelled orders can be archived");
+        }
+        if (Boolean.TRUE.equals(this.archived)) {
+            throw new IllegalStateException("Order is already archived");
+        }
+        this.archived = true;
+        this.archivedAt = Instant.now();
+        this.archivalReason = reason;
+    }
+
+    public void restore() {
+        if (!Boolean.TRUE.equals(this.archived)) {
+            throw new IllegalStateException("Only archived orders can be restored");
+        }
+        this.archived = false;
+        this.archivedAt = null;
+        this.archivalReason = null;
     }
 
     public void cancel(String reason) {

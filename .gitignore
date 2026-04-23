@@ -10,6 +10,7 @@ Thumbs.db
 # Local tooling
 .run/
 .tools/
+.kiro
 
 # Env files
 .env

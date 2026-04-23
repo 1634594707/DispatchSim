@@ -25,6 +25,14 @@ public record OrderDto(
         @Schema(description = "完成时间")
         Instant completedAt,
         @Schema(description = "取消原因")
-        String cancellationReason
+        String cancellationReason,
+        @Schema(description = "是否已归档")
+        Boolean archived,
+        @Schema(description = "归档时间")
+        Instant archivedAt,
+        @Schema(description = "归档原因")
+        String archivalReason,
+        @Schema(description = "所属出货点 ID", example = "2")
+        Long depotId
 ) {
 }

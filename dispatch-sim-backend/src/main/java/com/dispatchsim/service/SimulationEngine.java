@@ -2,6 +2,7 @@ package com.dispatchsim.service;
 
 import com.dispatchsim.domain.model.DispatchStrategy;
 import com.dispatchsim.dto.simulation.SimulationStatusDto;
+import com.dispatchsim.dto.simulation.UpdateSimulationSpeedRequest;
 
 public interface SimulationEngine {
 
@@ -14,6 +15,12 @@ public interface SimulationEngine {
     SimulationStatusDto resume();
 
     SimulationStatusDto tick();
+
+    SimulationStatusDto executeStep();
+
+    SimulationStatusDto reset();
+
+    SimulationStatusDto updateSpeed(UpdateSimulationSpeedRequest request);
 
     SimulationStatusDto updateStrategy(DispatchStrategy strategy);
 

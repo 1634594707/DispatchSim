@@ -26,6 +26,8 @@ export interface Vehicle {
   totalTasks: number
   totalDistance: number
   currentOrderId?: number
+  orderQueue?: number[]
+  loadingTimeRemaining?: number
 }
 
 // Order Types
@@ -49,6 +51,10 @@ export interface Order {
   createdAt: Date
   completedAt?: Date
   cancellationReason?: string
+  archived?: boolean
+  archivedAt?: Date
+  archivalReason?: string
+  depotId?: number
 }
 
 // Simulation Types
@@ -73,6 +79,9 @@ export interface SimulationState {
   status: SimulationStatus
   strategy: DispatchStrategy
   elapsedTime: number
+  speed?: number
+  stepMode?: boolean
+  pauseEditingEnabled?: boolean
 }
 
 // Statistics Types
@@ -102,4 +111,24 @@ export interface Obstacle {
   width: number
   height: number
   label?: string
+}
+
+// Depot Types
+export interface Depot {
+  id: number
+  name: string
+  position: Position
+  icon?: string
+  pendingOrderCount?: number
+  metadata?: Record<string, unknown>
+  createdAt?: Date
+}
+
+// Context Menu Types
+export interface ContextMenuItem {
+  id: string
+  label: string
+  icon?: string
+  action: () => void
+  disabled?: boolean
 }

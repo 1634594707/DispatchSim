@@ -1,6 +1,6 @@
 package com.dispatchsim.service.impl;
 
-import com.dispatchsim.common.exception.BusinessException;
+import com.dispatchsim.common.exception.ValidationException;
 import com.dispatchsim.dto.PositionDto;
 import com.dispatchsim.dto.order.OrderDto;
 import com.dispatchsim.dto.order.CreateOrderRequest;
@@ -71,7 +71,7 @@ public class BatchOrderServiceImpl implements BatchOrderService {
 
     private void validateRanges(BatchOrderRangeDto range, String name) {
         if (range.minX() > range.maxX() || range.minY() > range.maxY()) {
-            throw new BusinessException(name + " 范围无效：最小值不能大于最大值");
+            throw new ValidationException(name + " 范围无效：最小值不能大于最大值");
         }
     }
 

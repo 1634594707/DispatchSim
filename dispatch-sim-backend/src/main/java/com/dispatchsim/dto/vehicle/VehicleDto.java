@@ -29,6 +29,10 @@ public record VehicleDto(
         @Schema(description = "累计行驶距离", example = "328.5")
         Double totalDistance,
         @Schema(description = "当前订单 ID", example = "18")
-        Long currentOrderId
+        Long currentOrderId,
+        @Schema(description = "订单队列")
+        java.util.List<Long> orderQueue,
+        @Schema(description = "剩余装卸时间（秒）", example = "3")
+        Integer loadingTimeRemaining
 ) {
 }

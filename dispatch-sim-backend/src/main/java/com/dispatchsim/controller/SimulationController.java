@@ -5,6 +5,7 @@ import com.dispatchsim.dto.ApiResponse;
 import com.dispatchsim.dto.simulation.BatchOrderRequest;
 import com.dispatchsim.dto.simulation.BatchOrderResponse;
 import com.dispatchsim.dto.simulation.SimulationStatusDto;
+import com.dispatchsim.dto.simulation.UpdateSimulationSpeedRequest;
 import com.dispatchsim.dto.simulation.UpdateStrategyRequest;
 import com.dispatchsim.service.BatchOrderService;
 import com.dispatchsim.service.SimulationEngine;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,6 +57,24 @@ public class SimulationController {
     @Operation(summary = "单步执行")
     public ApiResponse<SimulationStatusDto> tick() {
         return ApiResponse.success(simulationEngine.tick());
+    }
+
+    @PostMapping("/step")
+    @Operation(summary = "执行单步仿真", description = "自动进入暂停态并只推进一个 tick")
+    public ApiResponse<SimulationStatusDto> step() {
+        return ApiResponse.success(simulationEngine.executeStep());
+    }
+
+    @PostMapping("/reset")
+    @Operation(summary = "重置仿真", description = "清空订单、重置车辆与统计，但保留出货点和路网")
+    public ApiResponse<SimulationStatusDto> reset() {
+        return ApiResponse.success(simulationEngine.reset());
+    }
+
+    @PutMapping("/speed")
+    @Operation(summary = "更新仿真速度")
+    public ApiResponse<SimulationStatusDto> updateSpeed(@Valid @RequestBody UpdateSimulationSpeedRequest request) {
+        return ApiResponse.success(simulationEngine.updateSpeed(request));
     }
 
     @PostMapping("/strategy")

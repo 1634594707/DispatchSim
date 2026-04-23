@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { DispatchStrategy, SimulationStatus } from '@/types'
+import type { SimulationStatusDto } from '@/api/types'
 import { useOrderStore } from './order'
 import { useStatisticsStore } from './statistics'
 import { useVehicleStore } from './vehicle'
@@ -9,10 +10,12 @@ import {
   getSimulationStatusApi,
   pauseSimulationApi,
   resumeSimulationApi,
+  resetSimulationApi,
   startSimulationApi,
+  stepSimulationApi,
   stopSimulationApi,
-  tickSimulationApi,
   updateSimulationStrategyApi,
+  updateSimulationSpeedApi,
 } from '@/api/simulation'
 import { getReplaySessionsApi, replayControlApi } from '@/api/replay'
 import type { BatchOrderRequestDto, ReplayFrameDto, ReplaySessionDto } from '@/api/types'
@@ -26,6 +29,8 @@ export const useSimulationStore = defineStore('simulation', () => {
   const sessionId = ref<string | null>(null)
   const elapsedTime = ref(0)
   const speed = ref(1)
+  const stepMode = ref(false)
+  const pauseEditingEnabled = ref(false)
   const loading = ref(false)
   const error = ref<string | null>(null)
   const replaySessions = ref<ReplaySessionDto[]>([])
@@ -50,11 +55,14 @@ export const useSimulationStore = defineStore('simulation', () => {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   })
 
-  const syncState = (nextState: { status: SimulationStatus; strategy: DispatchStrategy; sessionId?: string; elapsedTime: number }) => {
+  const syncState = (nextState: SimulationStatusDto) => {
     status.value = nextState.status
     strategy.value = nextState.strategy
     sessionId.value = nextState.sessionId ?? null
     elapsedTime.value = nextState.elapsedTime
+    speed.value = nextState.speed ?? 1
+    stepMode.value = nextState.stepMode ?? false
+    pauseEditingEnabled.value = nextState.pauseEditingEnabled ?? false
   }
 
   const refreshRelatedData = async () => {
@@ -158,7 +166,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     error.value = null
 
     try {
-      await tickSimulationApi()
+      await stepSimulationApi()
       await fetchStatus()
       await refreshRelatedData()
       toastStore.info('已执行单步仿真')
@@ -191,7 +199,42 @@ export const useSimulationStore = defineStore('simulation', () => {
   }
 
   const setSpeed = (newSpeed: number) => {
-    speed.value = newSpeed
+    loading.value = true
+    error.value = null
+
+    return updateSimulationSpeedApi(newSpeed)
+      .then(async () => {
+        speed.value = newSpeed
+        await fetchStatus()
+        toastStore.info('仿真速度已更新', `当前速度：${newSpeed}x`)
+      })
+      .catch((err) => {
+        error.value = getErrorMessage(err, '更新仿真速度失败')
+        reportError(err, '更新仿真速度失败')
+        throw err
+      })
+      .finally(() => {
+        loading.value = false
+      })
+  }
+
+  const reset = async () => {
+    loading.value = true
+    error.value = null
+
+    try {
+      await resetSimulationApi()
+      await fetchStatus()
+      await refreshRelatedData()
+      await orderStore.fetchArchivedOrders().catch(() => [])
+      toastStore.info('仿真已重置')
+    } catch (err) {
+      error.value = getErrorMessage(err, '重置仿真失败')
+      reportError(err, '重置仿真失败')
+      throw err
+    } finally {
+      loading.value = false
+    }
   }
 
   const fetchReplaySessions = async () => {
@@ -300,6 +343,8 @@ export const useSimulationStore = defineStore('simulation', () => {
     sessionId,
     elapsedTime,
     speed,
+    stepMode,
+    pauseEditingEnabled,
     loading,
     error,
     replaySessions,
@@ -318,6 +363,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     resume,
     stop,
     step,
+    reset,
     setStrategy,
     setSpeed,
     createBatchOrders,

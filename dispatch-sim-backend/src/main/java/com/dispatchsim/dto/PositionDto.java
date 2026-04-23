@@ -6,9 +6,9 @@ import jakarta.validation.constraints.DecimalMin;
 
 @Schema(description = "二维坐标点")
 public record PositionDto(
-        @Schema(description = "X 坐标，单位米", example = "12.5")
-        @DecimalMin("0.0") @DecimalMax("140.0") double x,
-        @Schema(description = "Y 坐标，单位米", example = "18.0")
-        @DecimalMin("0.0") @DecimalMax("100.0") double y
+        @Schema(description = "X 坐标，单位米", example = "240.0")
+        @DecimalMin("0.0") @DecimalMax("1200.0") double x,
+        @Schema(description = "Y 坐标，单位米", example = "560.0")
+        @DecimalMin("0.0") @DecimalMax("800.0") double y
 ) {
 }

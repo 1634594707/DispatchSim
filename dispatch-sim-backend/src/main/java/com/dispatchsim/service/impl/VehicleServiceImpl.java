@@ -2,6 +2,7 @@ package com.dispatchsim.service.impl;
 
 import com.dispatchsim.common.exception.BusinessException;
 import com.dispatchsim.common.exception.ResourceNotFoundException;
+import com.dispatchsim.common.exception.StateException;
 import com.dispatchsim.domain.event.VehicleFaultedEvent;
 import com.dispatchsim.domain.event.VehicleRecoveredEvent;
 import com.dispatchsim.domain.model.OrderStatus;
@@ -11,7 +12,10 @@ import com.dispatchsim.domain.model.VehicleStatus;
 import com.dispatchsim.domain.repository.OrderRepository;
 import com.dispatchsim.domain.repository.VehicleRepository;
 import com.dispatchsim.dto.vehicle.FaultRequest;
+import com.dispatchsim.dto.vehicle.VehicleBatteryUpdateRequest;
+import com.dispatchsim.dto.vehicle.VehicleChargeRequest;
 import com.dispatchsim.dto.vehicle.VehicleDto;
+import com.dispatchsim.dto.vehicle.VehicleQueueRequest;
 import com.dispatchsim.dto.support.DomainDtoMapper;
 import com.dispatchsim.service.DispatchEngine;
 import com.dispatchsim.service.DomainEventPublisher;
@@ -54,7 +58,7 @@ public class VehicleServiceImpl implements VehicleService {
         try {
             vehicle.markFaulty();
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
 
         orderRepository.findByAssignedVehicleIdAndStatusIn(
@@ -77,6 +81,48 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional
+    public VehicleDto updateBattery(Long id, VehicleBatteryUpdateRequest request) {
+        Vehicle vehicle = findVehicle(id);
+        vehicle.setBattery(request.battery());
+        Vehicle saved = vehicleRepository.save(vehicle);
+        realtimeStateCoordinator.recordAndPublishVehicles(List.of(saved), true);
+        return mapper.toDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public VehicleDto chargeVehicle(Long id, VehicleChargeRequest request) {
+        Vehicle vehicle = findVehicle(id);
+        vehicle.charge(request == null || request.amount() == null ? 10 : request.amount());
+        Vehicle saved = vehicleRepository.save(vehicle);
+        realtimeStateCoordinator.recordAndPublishVehicles(List.of(saved), true);
+        return mapper.toDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public VehicleDto updateOrderQueue(Long id, VehicleQueueRequest request) {
+        Vehicle vehicle = findVehicle(id);
+        List<Long> orderIds = request == null || request.orderIds() == null ? List.of() : request.orderIds();
+        vehicle.setOrderQueue(orderIds);
+        if (vehicle.getCurrentOrderId() == null || !vehicle.getOrderQueue().contains(vehicle.getCurrentOrderId())) {
+            vehicle.setCurrentOrderId(vehicle.getOrderQueue().isEmpty() ? null : vehicle.getOrderQueue().get(0));
+        }
+        if (vehicle.getStatus() != VehicleStatus.FAULTY && vehicle.getStatus() != VehicleStatus.OFFLINE) {
+            vehicle.setStatus(vehicle.getCurrentOrderId() == null ? VehicleStatus.IDLE : VehicleStatus.DELIVERING);
+        }
+        Vehicle saved = vehicleRepository.save(vehicle);
+        realtimeStateCoordinator.recordAndPublishVehicles(List.of(saved), true);
+        return mapper.toDto(saved);
+    }
+
+    @Override
+    public List<Long> getOrderQueue(Long id) {
+        return findVehicle(id).getOrderQueue();
+    }
+
+    @Override
+    @Transactional
     public VehicleDto recoverVehicle(Long id) {
         log.info("Recovering vehicle {}", id);
         Vehicle vehicle = findVehicle(id);
@@ -87,7 +133,7 @@ public class VehicleServiceImpl implements VehicleService {
                 vehicle.release();
             }
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
         Vehicle saved = vehicleRepository.save(vehicle);
         domainEventPublisher.publish("VEHICLE", saved.getId(), new VehicleRecoveredEvent(saved.getId()));

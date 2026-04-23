@@ -1,7 +1,6 @@
 import type { Vehicle, Order, Position, Obstacle, ObstacleType } from '@/types'
 
-const MAP_WIDTH = 140
-const MAP_HEIGHT = 100
+import { MAP_WIDTH, MAP_HEIGHT } from '@/constants/map'
 
 // Generate random position within map bounds
 export const generateRandomPosition = (): Position => {

@@ -2,16 +2,22 @@ package com.dispatchsim.service.impl;
 
 import com.dispatchsim.common.exception.BusinessException;
 import com.dispatchsim.common.exception.ResourceNotFoundException;
+import com.dispatchsim.common.exception.StateException;
 import com.dispatchsim.domain.event.OrderCancelledEvent;
 import com.dispatchsim.domain.event.OrderCompletedEvent;
 import com.dispatchsim.domain.event.OrderCreatedEvent;
 import com.dispatchsim.domain.model.Order;
 import com.dispatchsim.domain.model.OrderStatus;
 import com.dispatchsim.domain.repository.OrderRepository;
+import com.dispatchsim.dto.PageResponse;
+import com.dispatchsim.dto.order.ArchiveOrderRequest;
 import com.dispatchsim.dto.order.CancelOrderRequest;
 import com.dispatchsim.dto.order.CreateOrderRequest;
 import com.dispatchsim.dto.order.OrderDto;
+import com.dispatchsim.dto.depot.DepotDto;
 import com.dispatchsim.dto.support.DomainDtoMapper;
+import com.dispatchsim.service.ArchiveService;
+import com.dispatchsim.service.DepotService;
 import com.dispatchsim.service.DomainEventPublisher;
 import com.dispatchsim.service.DispatchEngine;
 import com.dispatchsim.service.OrderService;
@@ -41,6 +47,8 @@ public class OrderServiceImpl implements OrderService {
     private final DomainEventPublisher domainEventPublisher;
     private final ReplayService replayService;
     private final RealtimeStateCoordinator realtimeStateCoordinator;
+    private final ArchiveService archiveService;
+    private final DepotService depotService;
 
     @Override
     @Transactional
@@ -102,7 +110,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderDto> listOrders(OrderStatus status) {
-        List<Order> orders = status == null ? orderRepository.findAll() : orderRepository.findByStatus(status);
+        List<Order> orders = status == null
+                ? orderRepository.findByArchivedFalseOrderByCreatedAtDesc()
+                : orderRepository.findByStatusAndArchivedFalseOrderByCreatedAtDesc(status);
         return orders.stream().map(mapper::toDto).toList();
     }
 
@@ -120,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             order.cancel(request.reason());
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
         Order saved = orderRepository.save(order);
         replayService.recordOrderStatusChange(saved);
@@ -135,12 +145,29 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public OrderDto archiveOrder(Long id, ArchiveOrderRequest request) {
+        return archiveService.archiveOrder(id, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto restoreOrder(Long id) {
+        return archiveService.restoreOrder(id);
+    }
+
+    @Override
+    public PageResponse<OrderDto> listArchivedOrders(Instant archivedFrom, Instant archivedTo, String reason, String orderNo, int page, int size) {
+        return archiveService.listArchivedOrders(archivedFrom, archivedTo, reason, orderNo, page, size);
+    }
+
+    @Override
+    @Transactional
     public OrderDto markDeliveryStarted(Long id) {
         Order order = findOrder(id);
         try {
             order.startDelivery();
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
         Order saved = orderRepository.save(order);
         realtimeStateCoordinator.recordAndPublishOrders(List.of(saved), false);
@@ -155,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             order.complete();
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
         Order saved = orderRepository.save(order);
         domainEventPublisher.publish("ORDER", saved.getId(), new OrderCompletedEvent(saved.getId()));
@@ -171,7 +198,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             order.rollbackToPending();
         } catch (IllegalStateException exception) {
-            throw new BusinessException(exception.getMessage());
+            throw new StateException(exception.getMessage());
         }
         Order saved = orderRepository.save(order);
         realtimeStateCoordinator.recordAndPublishOrders(List.of(saved), false);
@@ -189,10 +216,17 @@ public class OrderServiceImpl implements OrderService {
                 .pickup(mapper.toEntity(request.pickup()))
                 .delivery(mapper.toEntity(request.delivery()))
                 .priority(request.priority())
+                .depotId(resolveDepotId(request))
                 .createdAt(Instant.now())
+                .archived(false)
                 .dispatchAttempts(0)
                 .build();
         order.markPending();
         return order;
+    }
+
+    private Long resolveDepotId(CreateOrderRequest request) {
+        DepotDto nearestDepot = depotService.findNearestDepot(request.pickup().x(), request.pickup().y());
+        return nearestDepot == null ? null : nearestDepot.id();
     }
 }

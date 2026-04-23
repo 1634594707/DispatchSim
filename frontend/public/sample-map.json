@@ -1,94 +1,36 @@
 {
   "obstacles": [
-    {
-      "id": "building-1",
-      "type": "BUILDING",
-      "x": 20,
-      "y": 60,
-      "width": 30,
-      "height": 25,
-      "label": "仓库A"
-    },
-    {
-      "id": "building-2",
-      "type": "BUILDING",
-      "x": 90,
-      "y": 65,
-      "width": 35,
-      "height": 30,
-      "label": "配送中心"
-    },
-    {
-      "id": "building-3",
-      "type": "BUILDING",
-      "x": 55,
-      "y": 75,
-      "width": 25,
-      "height": 20,
-      "label": "办公楼"
-    },
-    {
-      "id": "parking-1",
-      "type": "PARKING",
-      "x": 10,
-      "y": 10,
-      "width": 25,
-      "height": 20,
-      "label": "停车场A"
-    },
-    {
-      "id": "parking-2",
-      "type": "PARKING",
-      "x": 110,
-      "y": 15,
-      "width": 20,
-      "height": 25,
-      "label": "停车场B"
-    },
-    {
-      "id": "road-1",
-      "type": "ROAD",
-      "x": 0,
-      "y": 45,
-      "width": 140,
-      "height": 8,
-      "label": "主干道"
-    },
-    {
-      "id": "road-2",
-      "type": "ROAD",
-      "x": 65,
-      "y": 0,
-      "width": 8,
-      "height": 100,
-      "label": "次干道"
-    },
-    {
-      "id": "road-3",
-      "type": "ROAD",
-      "x": 0,
-      "y": 30,
-      "width": 50,
-      "height": 6,
-      "label": "支路1"
-    },
-    {
-      "id": "green-1",
-      "type": "GREEN_SPACE",
-      "x": 100,
-      "y": 15,
-      "width": 20,
-      "height": 20,
-      "label": "公园"
-    },
-    {
-      "id": "green-2",
-      "type": "GREEN_SPACE",
-      "x": 40,
-      "y": 10,
-      "width": 15,
-      "height": 15,
-      "label": "绿地"
-    }
+    { "id": "west-loop-north", "type": "ROAD", "x": 100, "y": 610, "width": 360, "height": 16, "label": "West Campus North Loop" },
+    { "id": "west-loop-south", "type": "ROAD", "x": 100, "y": 330, "width": 360, "height": 16, "label": "West Campus South Loop" },
+    { "id": "west-loop-west", "type": "ROAD", "x": 100, "y": 330, "width": 16, "height": 296, "label": "West Campus West Loop" },
+    { "id": "west-loop-east", "type": "ROAD", "x": 444, "y": 330, "width": 16, "height": 296, "label": "West Campus East Loop" },
+    { "id": "west-spine", "type": "ROAD", "x": 268, "y": 330, "width": 20, "height": 296, "label": "West Campus Spine" },
+    { "id": "gate-road", "type": "ROAD", "x": 0, "y": 466, "width": 116, "height": 12, "label": "Gate Access" },
+    { "id": "intercity-link", "type": "ROAD", "x": 460, "y": 392, "width": 360, "height": 24, "label": "Inter-District Connector" },
+    { "id": "east-loop-north", "type": "ROAD", "x": 820, "y": 610, "width": 260, "height": 16, "label": "Remote District North Loop" },
+    { "id": "east-loop-south", "type": "ROAD", "x": 820, "y": 330, "width": 260, "height": 16, "label": "Remote District South Loop" },
+    { "id": "east-loop-west", "type": "ROAD", "x": 820, "y": 330, "width": 16, "height": 296, "label": "Remote District West Loop" },
+    { "id": "east-loop-east", "type": "ROAD", "x": 1064, "y": 330, "width": 16, "height": 296, "label": "Remote District East Loop" },
+    { "id": "east-spine", "type": "ROAD", "x": 946, "y": 330, "width": 20, "height": 296, "label": "Remote District Spine" },
+
+    { "id": "security-gatehouse", "type": "BUILDING", "x": 24, "y": 486, "width": 38, "height": 46, "label": "Security Gatehouse" },
+    { "id": "warehouse-a", "type": "BUILDING", "x": 150, "y": 500, "width": 120, "height": 84, "label": "Warehouse A" },
+    { "id": "warehouse-b", "type": "BUILDING", "x": 294, "y": 500, "width": 120, "height": 84, "label": "Warehouse B" },
+    { "id": "cross-dock", "type": "BUILDING", "x": 150, "y": 370, "width": 264, "height": 82, "label": "Cross Dock" },
+    { "id": "admin-office", "type": "BUILDING", "x": 168, "y": 232, "width": 96, "height": 62, "label": "Admin Office" },
+    { "id": "fleet-workshop", "type": "BUILDING", "x": 288, "y": 232, "width": 104, "height": 62, "label": "Fleet Workshop" },
+    { "id": "charging-hub", "type": "BUILDING", "x": 406, "y": 232, "width": 42, "height": 62, "label": "Charging Hub" },
+    { "id": "remote-hub", "type": "BUILDING", "x": 864, "y": 490, "width": 180, "height": 96, "label": "Remote Delivery Hub" },
+    { "id": "retail-center", "type": "BUILDING", "x": 864, "y": 368, "width": 180, "height": 76, "label": "Retail Fulfillment Center" },
+    { "id": "district-office", "type": "BUILDING", "x": 864, "y": 232, "width": 90, "height": 60, "label": "District Office" },
+    { "id": "service-center", "type": "BUILDING", "x": 976, "y": 232, "width": 68, "height": 60, "label": "Service Point" },
+
+    { "id": "truck-staging", "type": "PARKING", "x": 132, "y": 130, "width": 220, "height": 56, "label": "Truck Staging Yard" },
+    { "id": "visitor-parking", "type": "PARKING", "x": 370, "y": 130, "width": 88, "height": 56, "label": "Visitor Parking" },
+    { "id": "remote-parking", "type": "PARKING", "x": 852, "y": 130, "width": 200, "height": 58, "label": "Remote Fleet Parking" },
+
+    { "id": "west-buffer", "type": "GREEN_SPACE", "x": 112, "y": 660, "width": 160, "height": 52, "label": "Landscape Buffer" },
+    { "id": "rain-garden", "type": "GREEN_SPACE", "x": 302, "y": 660, "width": 146, "height": 52, "label": "Rain Garden" },
+    { "id": "district-pond", "type": "GREEN_SPACE", "x": 1088, "y": 336, "width": 56, "height": 220, "label": "Retention Pond" }
   ]
 }

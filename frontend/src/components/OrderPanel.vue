@@ -90,6 +90,14 @@
           >
             取消订单
           </button>
+
+          <button
+            v-else
+            @click.stop="handleArchiveOrder(order.id)"
+            class="w-full mt-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition-smooth cursor-pointer"
+          >
+            归档订单
+          </button>
         </div>
       </div>
     </div>
@@ -199,6 +207,15 @@ const handleCancelOrder = async (orderId: number) => {
   if (confirm('确定要取消这个订单吗？')) {
     try {
       await orderStore.cancelOrder(orderId, '用户手动取消')
+    } catch {
+    }
+  }
+}
+
+const handleArchiveOrder = async (orderId: number) => {
+  if (confirm('确定要归档这个订单吗？')) {
+    try {
+      await orderStore.archiveOrder(orderId, '用户手动归档')
     } catch {
     }
   }

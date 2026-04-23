@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Vehicle, VehicleStatus } from '@/types'
+import type { Position, Vehicle, VehicleStatus } from '@/types'
 import { getVehicleByIdApi, getVehiclesApi, recoverVehicleApi, triggerFaultApi } from '@/api/vehicle'
 import { normalizeVehicle } from '@/api/types'
 import { getErrorMessage, reportError } from '@/utils/errorHandler'
@@ -83,6 +83,27 @@ export const useVehicleStore = defineStore('vehicle', () => {
     vehicles.value.push(vehicle)
   }
 
+  const createVehicleAtPosition = (position: Position) => {
+    const nextId = Math.max(0, ...vehicles.value.map((vehicle) => vehicle.id)) + 1
+    const vehicle: Vehicle = {
+      id: nextId,
+      status: 'IDLE',
+      currentPosition: { ...position },
+      battery: 100,
+      speed: 8,
+      maxSpeed: 12,
+      currentLoad: 0,
+      capacity: 80,
+      heading: 0,
+      totalTasks: 0,
+      totalDistance: 0,
+    }
+
+    vehicles.value.unshift(vehicle)
+    toastStore.success('车辆已添加', `车辆 #${vehicle.id} 已吸附到最近路网节点`)
+    return vehicle
+  }
+
   const updateVehicle = (id: number, updates: Partial<Vehicle>) => {
     const index = vehicles.value.findIndex((vehicle) => vehicle.id === id)
 
@@ -101,6 +122,16 @@ export const useVehicleStore = defineStore('vehicle', () => {
     if (vehicle) {
       vehicle.currentPosition = { x, y }
     }
+  }
+
+  const removeVehicle = (id: number) => {
+    const index = vehicles.value.findIndex((vehicle) => vehicle.id === id)
+    if (index === -1) {
+      return
+    }
+
+    vehicles.value.splice(index, 1)
+    toastStore.info('车辆已删除', `车辆 #${id} 已从地图移除`)
   }
 
   const updateVehicleStatus = (id: number, status: VehicleStatus) => {
@@ -195,9 +226,11 @@ export const useVehicleStore = defineStore('vehicle', () => {
     fetchVehicles,
     fetchVehicleById,
     addVehicle,
+    createVehicleAtPosition,
     updateVehicle,
     updateVehiclePosition,
     updateVehicleStatus,
+    removeVehicle,
     assignOrder,
     completeOrder,
     setFaulty,

@@ -1,5 +1,6 @@
 import { apiClient, unwrapList, unwrapResponse } from './client'
 import type {
+  ArchiveOrderRequestDto,
   CancelOrderRequestDto,
   CreateOrderRequestDto,
   OrderDto,
@@ -26,4 +27,26 @@ export const getOrderByIdApi = async (id: number) => {
 export const cancelOrderApi = async (id: number, payload: CancelOrderRequestDto = {}) => {
   const response = await apiClient.post<OrderDto>(`/orders/${id}/cancel`, payload)
   return unwrapResponse(response)
+}
+
+export const archiveOrderApi = async (id: number, payload: ArchiveOrderRequestDto = {}) => {
+  const response = await apiClient.post<OrderDto>(`/orders/${id}/archive`, payload)
+  return unwrapResponse(response)
+}
+
+export const restoreOrderApi = async (id: number) => {
+  const response = await apiClient.post<OrderDto>(`/orders/${id}/restore`)
+  return unwrapResponse(response)
+}
+
+export const getArchivedOrdersApi = async (params?: {
+  archivedFrom?: string
+  archivedTo?: string
+  reason?: string
+  orderNo?: string
+  page?: number
+  size?: number
+}) => {
+  const response = await apiClient.get<PageResult<OrderDto>>('/orders/archived', { params })
+  return unwrapList(unwrapResponse(response))
 }

@@ -56,6 +56,13 @@ public class PerformanceMetricsServiceImpl implements PerformanceMetricsService 
         );
     }
 
+    @Override
+    public synchronized void reset() {
+        dispatchMetrics.clear();
+        websocketMetrics.clear();
+        slowQueryMetrics.clear();
+    }
+
     private void addMetric(Deque<TimedMetric> target, String name, double value, String label) {
         target.addLast(new TimedMetric(Instant.now(), name, value, label));
         while (target.size() > MAX_POINTS) {

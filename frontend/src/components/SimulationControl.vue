@@ -102,6 +102,18 @@
         </svg>
         单步
       </button>
+
+      <button
+        @click="handleReset"
+        :disabled="simulationStore.loading"
+        class="col-span-2 flex items-center justify-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-smooth cursor-pointer"
+        aria-label="重置仿真"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356-2A8.001 8.001 0 005.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357 2m15.357-2H15" />
+        </svg>
+        重置
+      </button>
     </div>
 
     <!-- Speed Control -->
@@ -115,13 +127,14 @@
         min="0.5"
         max="5"
         step="0.5"
-        v-model.number="simulationStore.speed"
+        v-model.number="simulationSpeed"
+        @change="handleSpeedChange"
         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
         aria-label="仿真速度"
-        :aria-valuenow="simulationStore.speed"
+        :aria-valuenow="simulationSpeed"
         aria-valuemin="0.5"
         aria-valuemax="5"
-        :aria-valuetext="`${simulationStore.speed}倍速`"
+        :aria-valuetext="`${simulationSpeed}倍速`"
       />
       <div class="flex justify-between text-xs text-gray-600 mt-1">
         <span>0.5x</span>
@@ -229,20 +242,20 @@
           <div class="rounded-xl bg-gray-50 p-3">
             <p class="mb-2 text-xs font-semibold text-text">取货范围</p>
             <div class="grid grid-cols-2 gap-2">
-              <input v-model.number="batchForm.pickupRange.minX" type="number" min="0" max="140" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minX" />
-              <input v-model.number="batchForm.pickupRange.maxX" type="number" min="0" max="140" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxX" />
-              <input v-model.number="batchForm.pickupRange.minY" type="number" min="0" max="100" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minY" />
-              <input v-model.number="batchForm.pickupRange.maxY" type="number" min="0" max="100" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxY" />
+              <input v-model.number="batchForm.pickupRange.minX" type="number" min="0" :max="MAP_WIDTH" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minX" />
+              <input v-model.number="batchForm.pickupRange.maxX" type="number" min="0" :max="MAP_WIDTH" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxX" />
+              <input v-model.number="batchForm.pickupRange.minY" type="number" min="0" :max="MAP_HEIGHT" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minY" />
+              <input v-model.number="batchForm.pickupRange.maxY" type="number" min="0" :max="MAP_HEIGHT" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxY" />
             </div>
           </div>
 
           <div class="rounded-xl bg-gray-50 p-3">
             <p class="mb-2 text-xs font-semibold text-text">送货范围</p>
             <div class="grid grid-cols-2 gap-2">
-              <input v-model.number="batchForm.deliveryRange.minX" type="number" min="0" max="140" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minX" />
-              <input v-model.number="batchForm.deliveryRange.maxX" type="number" min="0" max="140" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxX" />
-              <input v-model.number="batchForm.deliveryRange.minY" type="number" min="0" max="100" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minY" />
-              <input v-model.number="batchForm.deliveryRange.maxY" type="number" min="0" max="100" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxY" />
+              <input v-model.number="batchForm.deliveryRange.minX" type="number" min="0" :max="MAP_WIDTH" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minX" />
+              <input v-model.number="batchForm.deliveryRange.maxX" type="number" min="0" :max="MAP_WIDTH" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxX" />
+              <input v-model.number="batchForm.deliveryRange.minY" type="number" min="0" :max="MAP_HEIGHT" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="minY" />
+              <input v-model.number="batchForm.deliveryRange.maxY" type="number" min="0" :max="MAP_HEIGHT" step="0.1" class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-text" placeholder="maxY" />
             </div>
           </div>
         </div>
@@ -338,6 +351,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { MAP_WIDTH, MAP_HEIGHT } from '@/constants/map'
 import type { DispatchStrategy } from '@/types'
 import { useSimulationStore } from '@/stores/simulation'
 import type { BatchOrderGenerationStrategyDto, BatchOrderRequestDto, ReplaySessionDto } from '@/api/types'
@@ -347,6 +361,7 @@ const selectedStrategy = ref<DispatchStrategy>(simulationStore.strategy)
 const selectedReplaySession = ref('')
 const replayProgress = ref(1)
 const replaySpeed = ref(1)
+const simulationSpeed = ref(1)
 let replayTimer: ReturnType<typeof window.setInterval> | null = null
 const batchForm = ref<BatchOrderRequestDto>({
   totalOrders: 20,
@@ -355,16 +370,16 @@ const batchForm = ref<BatchOrderRequestDto>({
   strategy: 'UNIFORM',
   priority: 5,
   pickupRange: {
-    minX: 5,
-    maxX: 40,
-    minY: 5,
-    maxY: 35,
+    minX: 20,
+    maxX: 120,
+    minY: 20,
+    maxY: 80,
   },
   deliveryRange: {
-    minX: 60,
-    maxX: 120,
-    minY: 40,
-    maxY: 90,
+    minX: 160,
+    maxX: 280,
+    minY: 70,
+    maxY: 170,
   },
 })
 
@@ -438,6 +453,7 @@ watch(
   () => simulationStore.speed,
   (value) => {
     replaySpeed.value = value
+    simulationSpeed.value = value
   },
   { immediate: true },
 )
@@ -491,6 +507,13 @@ const handleStep = async () => {
   }
 }
 
+const handleReset = async () => {
+  try {
+    await simulationStore.reset()
+  } catch {
+  }
+}
+
 const handleStrategyChange = async () => {
   try {
     await simulationStore.setStrategy(selectedStrategy.value)
@@ -523,11 +546,20 @@ const handleReplaySeek = async () => {
   }
 }
 
-const handleReplaySpeedChange = async () => {
-  simulationStore.setSpeed(replaySpeed.value)
+const handleSpeedChange = async () => {
   try {
+    await simulationStore.setSpeed(simulationSpeed.value)
+  } catch {
+    simulationSpeed.value = simulationStore.speed
+  }
+}
+
+const handleReplaySpeedChange = async () => {
+  try {
+    await simulationStore.setSpeed(replaySpeed.value)
     await simulationStore.controlReplay('SPEED', { speed: replaySpeed.value })
   } catch {
+    replaySpeed.value = simulationStore.speed
   }
 }
 

@@ -17,6 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -62,9 +64,14 @@ public class Vehicle {
     private Integer totalTasks;
     private Double totalDistance;
     private Long currentOrderId;
+    @Column(name = "order_queue", nullable = false, length = 1024)
+    private String orderQueueJson;
+    @Column(nullable = false)
+    private Integer loadingTimeRemaining;
 
     public void assignOrder(Long orderId) {
         ensureState(VehicleStatus.IDLE);
+        addToQueue(orderId);
         this.currentOrderId = orderId;
         this.status = VehicleStatus.DELIVERING;
     }
@@ -73,8 +80,12 @@ public class Vehicle {
         if (this.status != VehicleStatus.DELIVERING) {
             throw new IllegalStateException("Only delivering vehicles can complete orders");
         }
-        this.currentOrderId = null;
-        this.status = VehicleStatus.IDLE;
+        removeFromQueue(this.currentOrderId);
+        List<Long> queue = getOrderQueue();
+        this.currentOrderId = queue.isEmpty() ? null : queue.get(0);
+        this.status = this.currentOrderId == null ? VehicleStatus.IDLE : VehicleStatus.DELIVERING;
+        this.loadingTimeRemaining = 0;
+        this.currentLoad = 0.0;
         this.totalTasks = (this.totalTasks == null ? 0 : this.totalTasks) + 1;
     }
 
@@ -89,19 +100,108 @@ public class Vehicle {
         if (this.status != VehicleStatus.FAULTY) {
             throw new IllegalStateException("Only faulty vehicles can recover");
         }
-        this.currentOrderId = null;
-        this.status = VehicleStatus.IDLE;
+        if (this.currentOrderId == null && !getOrderQueue().isEmpty()) {
+            this.currentOrderId = getOrderQueue().get(0);
+        }
+        this.status = this.currentOrderId == null ? VehicleStatus.IDLE : VehicleStatus.DELIVERING;
     }
 
     public void release() {
-        this.currentOrderId = null;
-        this.status = VehicleStatus.IDLE;
+        if (this.currentOrderId != null) {
+            removeFromQueue(this.currentOrderId);
+        }
+        List<Long> queue = getOrderQueue();
+        this.currentOrderId = queue.isEmpty() ? null : queue.get(0);
+        this.status = this.currentOrderId == null ? VehicleStatus.IDLE : VehicleStatus.DELIVERING;
+        this.loadingTimeRemaining = 0;
     }
 
     public void updatePosition(Position nextPosition) {
         double previousDistance = this.currentPosition == null ? 0.0 : this.currentPosition.distanceTo(nextPosition);
         this.currentPosition = nextPosition;
         this.totalDistance = (this.totalDistance == null ? 0.0 : this.totalDistance) + previousDistance;
+    }
+
+    public void consumeBattery(double distance) {
+        if (distance <= 0) {
+            return;
+        }
+        int consumption = Math.max(1, (int) Math.ceil(distance / 10.0));
+        this.battery = Math.max(0, (this.battery == null ? 0 : this.battery) - consumption);
+    }
+
+    public void charge(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        this.battery = Math.min(100, (this.battery == null ? 0 : this.battery) + amount);
+    }
+
+    public void startLoading(int seconds) {
+        this.loadingTimeRemaining = Math.max(0, seconds);
+    }
+
+    public int tickLoading() {
+        if (this.loadingTimeRemaining == null || this.loadingTimeRemaining <= 0) {
+            this.loadingTimeRemaining = 0;
+            return 0;
+        }
+        this.loadingTimeRemaining = this.loadingTimeRemaining - 1;
+        return this.loadingTimeRemaining;
+    }
+
+    public List<Long> getOrderQueue() {
+        if (this.orderQueueJson == null || this.orderQueueJson.isBlank()) {
+            return new ArrayList<>();
+        }
+
+        String normalized = this.orderQueueJson.trim();
+        if ("[]".equals(normalized)) {
+            return new ArrayList<>();
+        }
+
+        if (!normalized.startsWith("[") || !normalized.endsWith("]")) {
+            throw new IllegalStateException("Invalid vehicle order queue format");
+        }
+
+        String content = normalized.substring(1, normalized.length() - 1).trim();
+        if (content.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> result = new ArrayList<>();
+        for (String token : content.split(",")) {
+            result.add(Long.parseLong(token.trim()));
+        }
+        return result;
+    }
+
+    public void setOrderQueue(List<Long> orderIds) {
+        List<Long> normalized = orderIds == null ? List.of() : orderIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        this.orderQueueJson = normalized.toString();
+    }
+
+    public void addToQueue(Long orderId) {
+        if (orderId == null) {
+            return;
+        }
+        List<Long> queue = getOrderQueue();
+        if (!queue.contains(orderId)) {
+            queue.add(orderId);
+            setOrderQueue(queue);
+        }
+    }
+
+    public void removeFromQueue(Long orderId) {
+        if (orderId == null) {
+            return;
+        }
+        List<Long> queue = getOrderQueue();
+        queue.removeIf(id -> id.equals(orderId));
+        setOrderQueue(queue);
     }
 
     private void ensureState(VehicleStatus expected) {

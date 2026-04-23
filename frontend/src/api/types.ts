@@ -19,8 +19,10 @@ export interface PageResult<T> {
   records?: T[]
   items?: T[]
   total?: number
+  totalElements?: number
   page?: number
   size?: number
+  totalPages?: number
 }
 
 export interface PositionDto {
@@ -42,6 +44,10 @@ export interface OrderDto {
   createdAt?: string
   completedAt?: string | null
   cancellationReason?: string | null
+  archived?: boolean
+  archivedAt?: string | null
+  archivalReason?: string | null
+  depotId?: number | string | null
 }
 
 export interface CreateOrderRequestDto {
@@ -51,6 +57,10 @@ export interface CreateOrderRequestDto {
 }
 
 export interface CancelOrderRequestDto {
+  reason?: string
+}
+
+export interface ArchiveOrderRequestDto {
   reason?: string
 }
 
@@ -70,10 +80,28 @@ export interface VehicleDto {
   totalTasks?: number
   totalDistance?: number
   currentOrderId?: number | string | null
+  orderQueue?: Array<number | string>
+  loadingTimeRemaining?: number
 }
 
 export interface TriggerFaultRequestDto {
   faultType?: string
+}
+
+export interface DepotDto {
+  id: number | string
+  name: string
+  position: PositionDto
+  icon?: string | null
+  metadata?: string | null
+  createdAt?: string
+}
+
+export interface DepotUpsertRequestDto {
+  name: string
+  position: PositionDto
+  icon?: string
+  metadata?: string
 }
 
 export interface SimulationStatusDto {
@@ -81,6 +109,13 @@ export interface SimulationStatusDto {
   strategy: DispatchStrategy
   sessionId?: string
   elapsedTime: number
+  speed?: number
+  stepMode?: boolean
+  pauseEditingEnabled?: boolean
+}
+
+export interface UpdateSimulationSpeedRequestDto {
+  speed: number
 }
 
 export interface UpdateStrategyRequestDto {
@@ -251,6 +286,13 @@ export const normalizeOrder = (dto: OrderDto): Order => ({
   createdAt: toDate(dto.createdAt) ?? new Date(),
   completedAt: toDate(dto.completedAt),
   cancellationReason: dto.cancellationReason ?? undefined,
+  archived: dto.archived ?? false,
+  archivedAt: toDate(dto.archivedAt),
+  archivalReason: dto.archivalReason ?? undefined,
+  depotId:
+    dto.depotId === null || dto.depotId === undefined
+      ? undefined
+      : toNumber(dto.depotId),
 })
 
 export const normalizeVehicle = (dto: VehicleDto): Vehicle => ({
@@ -269,4 +311,6 @@ export const normalizeVehicle = (dto: VehicleDto): Vehicle => ({
     dto.currentOrderId === null || dto.currentOrderId === undefined
       ? undefined
       : toNumber(dto.currentOrderId),
+  orderQueue: (dto.orderQueue ?? []).map((id) => toNumber(id)),
+  loadingTimeRemaining: dto.loadingTimeRemaining ?? 0,
 })

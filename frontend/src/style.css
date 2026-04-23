@@ -69,6 +69,29 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-8px) translateX(8px);
 }
 
+/* Custom Cursor Styles for Map Canvas */
+canvas {
+  /* Ensure cursor is always visible with high contrast */
+  cursor: default;
+}
+
+canvas[style*="cursor: grab"] {
+  cursor: grab !important;
+  cursor: -webkit-grab !important;
+  cursor: -moz-grab !important;
+}
+
+canvas[style*="cursor: move"] {
+  cursor: move !important;
+}
+
+/* Fallback for browsers where grab cursor is not visible */
+@supports not (cursor: grab) {
+  canvas[style*="cursor: grab"] {
+    cursor: move !important;
+  }
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

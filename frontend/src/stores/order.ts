@@ -1,13 +1,22 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import type { Order, OrderStatus, Position } from '@/types'
-import { cancelOrderApi, createOrderApi, getOrderByIdApi, getOrdersApi } from '@/api/order'
+import {
+  archiveOrderApi,
+  cancelOrderApi,
+  createOrderApi,
+  getArchivedOrdersApi,
+  getOrderByIdApi,
+  getOrdersApi,
+  restoreOrderApi,
+} from '@/api/order'
 import { normalizeOrder } from '@/api/types'
 import { getErrorMessage, reportError } from '@/utils/errorHandler'
 import { useToastStore } from './toast'
 
 export const useOrderStore = defineStore('order', () => {
   const orders = ref<Order[]>([])
+  const archivedOrdersState = ref<Order[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const toastStore = useToastStore()
@@ -83,6 +92,22 @@ export const useOrderStore = defineStore('order', () => {
     } catch (err) {
       error.value = getErrorMessage(err, '加载订单详情失败')
       reportError(err, '订单详情加载失败')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const fetchArchivedOrders = async () => {
+    loading.value = true
+    error.value = null
+
+    try {
+      archivedOrdersState.value = (await getArchivedOrdersApi({ page: 0, size: 200 })).map(normalizeOrder)
+      return archivedOrdersState.value
+    } catch (err) {
+      error.value = getErrorMessage(err, '加载归档订单失败')
+      reportError(err, '归档订单加载失败')
       throw err
     } finally {
       loading.value = false
@@ -180,6 +205,7 @@ export const useOrderStore = defineStore('order', () => {
 
   const clearOrders = () => {
     orders.value = []
+    archivedOrdersState.value = []
   }
 
   const removeOrder = (id: number) => {
@@ -189,8 +215,53 @@ export const useOrderStore = defineStore('order', () => {
     }
   }
 
+  const archiveOrder = async (orderId: number, reason?: string) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const normalized = normalizeOrder(await archiveOrderApi(orderId, { reason }))
+      removeOrder(orderId)
+      archivedOrdersState.value = [
+        normalized,
+        ...archivedOrdersState.value.filter((order) => order.id !== orderId),
+      ]
+      toastStore.success('订单已归档', `订单 #${orderId} 已归档`)
+      return normalized
+    } catch (err) {
+      error.value = getErrorMessage(err, '归档订单失败')
+      reportError(err, '归档订单失败')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const restoreOrder = async (orderId: number) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const normalized = normalizeOrder(await restoreOrderApi(orderId))
+      archivedOrdersState.value = archivedOrdersState.value.filter((order) => order.id !== orderId)
+      orders.value = [normalized, ...orders.value.filter((order) => order.id !== orderId)]
+      toastStore.success('订单已恢复', `订单 #${orderId} 已恢复`)
+      return normalized
+    } catch (err) {
+      error.value = getErrorMessage(err, '恢复订单失败')
+      reportError(err, '恢复订单失败')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const archivedOrders = computed(() => archivedOrdersState.value)
+  const activeOrders = computed(() => orders.value.filter((order) => !order.archived))
+
   return {
     orders,
+    archivedOrdersState,
     loading,
     error,
     orderCount,
@@ -199,11 +270,14 @@ export const useOrderStore = defineStore('order', () => {
     assignedOrders,
     deliveringOrders,
     completedOrders,
+    archivedOrders,
+    activeOrders,
     completionRate,
     averageDeliveryTime,
     setOrders,
     fetchOrders,
     fetchOrderById,
+    fetchArchivedOrders,
     createOrder,
     updateOrder,
     updateOrderStatus,
@@ -211,6 +285,8 @@ export const useOrderStore = defineStore('order', () => {
     startDelivery,
     completeOrder,
     cancelOrder,
+    archiveOrder,
+    restoreOrder,
     getOrderById,
     getOrdersByVehicle,
     clearOrders,

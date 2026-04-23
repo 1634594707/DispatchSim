@@ -3,6 +3,8 @@ package com.dispatchsim.controller;
 import com.dispatchsim.common.constants.ApiPaths;
 import com.dispatchsim.domain.model.OrderStatus;
 import com.dispatchsim.dto.ApiResponse;
+import com.dispatchsim.dto.PageResponse;
+import com.dispatchsim.dto.order.ArchiveOrderRequest;
 import com.dispatchsim.dto.order.CancelOrderRequest;
 import com.dispatchsim.dto.order.CreateOrderRequest;
 import com.dispatchsim.dto.order.OrderDto;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -54,5 +58,32 @@ public class OrderController {
             @Parameter(description = "订单 ID", example = "1") @PathVariable Long id,
             @RequestBody(required = false) CancelOrderRequest request) {
         return ApiResponse.success(orderService.cancelOrder(id, request == null ? new CancelOrderRequest(null) : request));
+    }
+
+    @GetMapping("/archived")
+    @Operation(summary = "查询归档订单", description = "支持按归档时间、归档原因和订单号筛选")
+    public ApiResponse<PageResponse<OrderDto>> listArchivedOrders(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant archivedFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant archivedTo,
+            @RequestParam(required = false) String reason,
+            @RequestParam(required = false) String orderNo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.success(orderService.listArchivedOrders(archivedFrom, archivedTo, reason, orderNo, page, size));
+    }
+
+    @PostMapping("/{id}/archive")
+    @Operation(summary = "归档订单", description = "仅允许归档已完成或已取消订单")
+    public ApiResponse<OrderDto> archiveOrder(
+            @Parameter(description = "订单 ID", example = "1") @PathVariable Long id,
+            @RequestBody(required = false) ArchiveOrderRequest request) {
+        return ApiResponse.success(orderService.archiveOrder(id, request == null ? new ArchiveOrderRequest(null) : request));
+    }
+
+    @PostMapping("/{id}/restore")
+    @Operation(summary = "恢复归档订单", description = "将订单从归档列表恢复到活动列表")
+    public ApiResponse<OrderDto> restoreOrder(
+            @Parameter(description = "订单 ID", example = "1") @PathVariable Long id) {
+        return ApiResponse.success(orderService.restoreOrder(id));
     }
 }
